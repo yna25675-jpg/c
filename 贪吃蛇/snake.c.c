@@ -83,23 +83,46 @@ void CreateFood()
 //打印地图
 void DrawMap()
 {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE); // 获取控制台句柄
     CursorJump(0, 0);
+
     for (int i = 0; i < ROW; i++)
     {
         for (int j = 0; j < COL; j++)
         {
             switch (map[i][j])
             {
-                case WALL: printf("■"); break;
-                case HEAD: printf("●"); break;
-                case BODY: printf("○"); break;
-                case FOOD: printf("★"); break;
-                default:   printf("  "); break;
+                case WALL:
+                    SetConsoleTextAttribute(handle, COLOR_BLUE);
+                    printf("■");
+                    break;
+                case HEAD:
+                    SetConsoleTextAttribute(handle, COLOR_RED);
+                    printf("●");
+                    break;
+                case BODY:
+                    SetConsoleTextAttribute(handle, COLOR_LIGHT_BLUE);
+                    printf("○");
+                    break;
+                case FOOD:
+                    SetConsoleTextAttribute(handle, COLOR_WHITE);
+                    printf("★");
+                    break;
+                default:
+                    SetConsoleTextAttribute(handle, COLOR_DEFAULT);
+                    printf("  ");
+                    break;
             }
         }
         printf("\n");
     }
+
+    // 打印分数
+    SetConsoleTextAttribute(handle, COLOR_WHITE);
     printf("得分：%d\n", score);
+
+    // 恢复默认颜色
+    SetConsoleTextAttribute(handle, COLOR_DEFAULT);
 }
 // 移动蛇
 void MoveSnake()
@@ -110,6 +133,8 @@ void MoveSnake()
     if (_kbhit())
     {
         int key = _getch();
+
+        // 方向键
         if (key == ARROW)
         {
             key = _getch();
@@ -121,8 +146,18 @@ void MoveSnake()
                 direction = key;
             }
         }
+        // ✅ 暂停功能放这里
+        else if (key == SPACE)
+        {
+            CursorJump(ROW + 2, 0);  // 在地图下方输出提示
+            printf("暂停中，按任意键继续...");
+            _getch(); // 等待玩家按任意键
+            CursorJump(ROW + 2, 0);
+            printf("                      "); // 清空提示文字
+        }
     }
 
+    // ↓↓↓ 下面是蛇移动逻辑
     switch (direction)
     {
         case UP: newX--; break;
@@ -147,11 +182,11 @@ void MoveSnake()
         snake.len++;
         CreateFood();
     }
-    // 在移动前保存尾巴
+
+    // 移动身体
     int tailX = body[snake.len - 1].bodyX;
     int tailY = body[snake.len - 1].bodyY;
 
-    // 移动身体
     for (int i = snake.len - 1; i > 0; i--)
     {
         body[i] = body[i - 1];
@@ -187,6 +222,6 @@ int main()
         MoveSnake();
         Sleep(150);
     }
-
+   
     return 0;
 }
